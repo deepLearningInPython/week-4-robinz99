@@ -92,22 +92,19 @@ frequent_words = {word: count for word, count in word_frequencies.items() if cou
 
 
 
-
 # Task 4: Define a function that takes a string and an integer k, and returns a dictionary with
-#   the token frequencies of only those tokens that occur more than k times in the string.
+#   the token frequencies of only those tokens that occur more than or equal tok times in the string.
 
 # Your code here:
 # -----------------------------------------------
 def token_counts(string: str, k: int = 1) -> dict:
     tokens = [word.strip('.,!?').lower() for word in string.split()]
     
-   
     frequencies = {}
     for token in tokens:
         frequencies[token] = frequencies.get(token, 0) + 1
         
-    
-    return {word: count for word, count in frequencies.items() if count > k}
+    return {word: count for word, count in frequencies.items() if count >= k}
 
 # test:
 text_hist = {'the': 2, 'quick': 1, 'brown': 1, 'fox': 1, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 1}
