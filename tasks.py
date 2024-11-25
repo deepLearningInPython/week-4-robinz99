@@ -19,7 +19,6 @@ import numpy as np
 # create a simple tokenizer to split a sentence into words and remove punctuation.
 
 
-
 # Task 1: Given a paragraph of text, implement a simple "tokenizer" that splits the paragraph 
 #   into individual words (tokens) and removes any punctuation. Implement this using a list 
 #   comprehension.
@@ -29,11 +28,12 @@ import numpy as np
 text = "The quick brown fox jumps over the lazy dog!"
 
 # Write a list comprehension to tokenize the text and remove punctuation
-tokens = _ # Your code here
+tokens = [word.strip('.,!?') for word in text.split()] 
 
 # Expected output: ['The', 'quick', 'brown', 'fox', 'jumps', 'over', 'the', 'lazy', 'dog']
 print(tokens)
 # -----------------------------------------------
+
 
 
 
@@ -45,7 +45,11 @@ print(tokens)
 # Your code here:
 # -----------------------------------------------
 def tokenize(string: str) -> list:
-    pass # Your code
+    tokens = [word.strip('.,!?').lower() for word in string.split()]
+    
+    unique_tokens = sorted(set(tokens))
+    
+    return unique_tokens
 
 
 # -----------------------------------------------
@@ -66,6 +70,8 @@ def tokenize(string: str) -> list:
 
 
 
+
+
 # Task 3: Using the tokens list from the previous exercise, create a dictionary comprehension 
 #   that counts the frequency of each word.
 
@@ -74,13 +80,16 @@ def tokenize(string: str) -> list:
 
 # Your code here:
 # -----------------------------------------------
-word_frequencies = _ # Your code here
+word_frequencies = {word: tokens.count(word) for word in tokens} # Your code here
+
 
 # Expected output example: {'the': 2, 'quick': 1, ...}
 print(word_frequencies)
 
 # Modify the comprehension to include only words that appear more than once.
+frequent_words = {word: count for word, count in word_frequencies.items() if count > 1}
 # -----------------------------------------------
+
 
 
 
@@ -90,7 +99,15 @@ print(word_frequencies)
 # Your code here:
 # -----------------------------------------------
 def token_counts(string: str, k: int = 1) -> dict:
-    pass # Your code
+    tokens = [word.strip('.,!?').lower() for word in string.split()]
+    
+   
+    frequencies = {}
+    for token in tokens:
+        frequencies[token] = frequencies.get(token, 0) + 1
+        
+    
+    return {word: count for word, count in frequencies.items() if count > k}
 
 # test:
 text_hist = {'the': 2, 'quick': 1, 'brown': 1, 'fox': 1, 'jumps': 1, 'over': 1, 'lazy': 1, 'dog': 1}
@@ -111,7 +128,7 @@ all(text_hist[key] == value for key, value in token_counts(text).items())
 # ID to Token: Maps each unique number back to its corresponding token.
 #
 # These mappings are necessary for transforming text data into numerical data that models can 
-# process. In this exercise, you’ll use dictionary comprehensions to create these mappings.
+# process. In this exercise, you'll use dictionary comprehensions to create these mappings.
 
 
 
@@ -121,7 +138,7 @@ all(text_hist[key] == value for key, value in token_counts(text).items())
 
 # Your code here:
 # -----------------------------------------------
-token_to_id = _ # Your code here
+token_to_id = {token: idx for idx, token in enumerate(sorted(set(tokens)))}
 
 # Expected output: {'dog': 0, 'quick': 1, 'fox': 2, 'the': 3, 'over': 4, 'lazy': 5, 'brown': 6, 'jumps': 7}
 print(token_to_id)
@@ -133,7 +150,7 @@ print(token_to_id)
 #
 # Your code here:
 # -----------------------------------------------
-id_to_token = _ # Your code here
+id_to_token = {idx: token for token, idx in token_to_id.items()}
 
 # tests: 
 # test 1
@@ -154,8 +171,17 @@ assert all(id_to_token[token_to_id[key]]==key for key in token_to_id) and all(to
 # Your code here:
 # -----------------------------------------------
 def make_vocabulary_map(documents: list) -> tuple:
-    # Hint: use your tokenize function
-    pass # Your code
+    # Get all unique tokens across all documents
+    all_tokens = set()
+    for doc in documents:
+        tokens = tokenize(doc)
+        all_tokens.update(tokens)
+    
+    # Create the mappings
+    token2int = {token: idx for idx, token in enumerate(sorted(all_tokens))}
+    int2token = {idx: token for token, idx in token2int.items()}
+    
+    return token2int, int2token
 
 # Test
 t2i, i2t = make_vocabulary_map([text])
@@ -174,8 +200,17 @@ all(i2t[t2i[tok]] == tok for tok in t2i) # should be True
 # Your code here:
 # -----------------------------------------------
 def tokenize_and_encode(documents: list) -> list:
-    # Hint: use your make_vocabulary_map and tokenize function
-    pass # Your code
+    # Create vocabulary mappings
+    token_to_id, id_to_token = make_vocabulary_map(documents)
+    
+    # Tokenize and encode each document
+    encoded_documents = []
+    for doc in documents:
+        tokens = tokenize(doc)
+        encoded_doc = [token_to_id[token] for token in tokens]
+        encoded_documents.append(encoded_doc)
+        
+    return [encoded_documents, token_to_id, id_to_token]
 
 # Test:
 enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
@@ -201,7 +236,7 @@ enc, t2i, i2t = tokenize_and_encode([text, 'What a luck we had today!'])
 
 # Your code here:
 # -----------------------------------------------
-sigmoid = _ # Your code
+sigmoid = lambda x: 1 / (1 + np.exp(-x))
 
 # Test:
 np.all(sigmoid(np.log([1, 1/3, 1/7])) == np.array([1/2, 1/4, 1/8]))
